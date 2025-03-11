@@ -4,13 +4,45 @@ function animaster()
 {
     const _steps = [];
     return {
-        play(element) {
-            _steps.forEach(x => x[0](element, ...x.slice(1)));
+        play(element, cycled = false) {
+            if (_steps.length <= 0)
+                return;
+
+            _steps[0][0](element, ..._steps[0].slice(1));
+            let interval = _steps[0][1]
+            _steps.slice(1).forEach(x => {
+                setTimeout(() => {
+                    x[0](element, ...x.slice(1))
+                }, interval)
+                interval += x[1];
+            });
+
+
         },
 
         addMove(duration, translation) {
             _steps.push([(e, d, t) => animaster().move(e, d ,t), duration, translation]);
             return this;
+        },
+
+        addFadeOut(duration) {
+            _steps.push([(e, d) => animaster().fadeOut(e, d), duration]);
+            return this;
+        },
+
+        addScale(duration, ratio) {
+            _steps.push([(e, d, r) => animaster().scale(e, d , r), duration, ratio]);
+            return this;
+        },
+
+        addFadeIn(duration) {
+            _steps.push([(e, d) => animaster().fadeIn(e, d), duration]);
+            return this;
+        },
+
+        addDelay(duration) {
+          _steps.push([(e, d) => { }, duration]);
+          return this;
         },
 
         /**
@@ -49,40 +81,50 @@ function animaster()
             element.classList.remove('show');
         },
         moveAndHide(element, duration) {
-            animaster().move(element, duration * 2/5, { x: 100, y: 20 });
-            const timeout = setTimeout(() => animaster().fadeOut(element, duration * 3/5), duration * 2/5);
-            return {
-                reset() {
-                    clearTimeout(timeout);
-                    reseter().resetMove(element);
-                    reseter().resetFadeOut(element);
-                }
-            };
+            const anim = animaster().addMove(duration * 2/5, { x: 100, y: 20 })
+                                         .addFadeOut(duration * 3/5);
+            anim.play(element);
+            // animaster().move(element, duration * 2/5, { x: 100, y: 20 });
+            // const timeout = setTimeout(() => animaster().fadeOut(element, duration * 3/5), duration * 2/5);
+            // return {
+            //     reset() {
+            //         clearTimeout(timeout);
+            //         reseter().resetMove(element);
+            //         reseter().resetFadeOut(element);
+            //     }
+            // };
         },
         showAndHide(element, duration) {
-            animaster().fadeIn(element, duration * 1/3);
-            setTimeout(() => animaster().fadeOut(element, duration * 1/3), duration * 2/3);
+            const anim = animaster().addFadeIn(duration * 1/3)
+                                         .addDelay(duration * 1/3)
+                                         .addFadeOut(duration * 1/3);
+            anim.play(element);
+            // animaster().fadeIn(element, duration * 1/3);
+            // setTimeout(() => animaster().fadeOut(element, duration * 1/3), duration * 2/3);
         },
 
         heartBeating(element) {
-            let scaleUp = true;
-
-            const interval = setInterval(() => {
-                if (scaleUp) {
-                    animaster().scale(element, 500, 1.4);
-                } else {
-                    animaster().scale(element, 500, 1);
-                }
-                scaleUp = !scaleUp;
-            }, 500);
-
-            return {
-                stop() {
-                    clearInterval(interval);
-                    reseter().resetMove();
-                    reseter().resetFadeOut();
-                }
-            };
+            const anim = animaster().addScale(500, 1.4)
+                                         .addScale(500, 1);
+            anim.play(element, true);
+            // let scaleUp = true;
+            //
+            // const interval = setInterval(() => {
+            //     if (scaleUp) {
+            //         animaster().scale(element, 500, 1.4);
+            //     } else {
+            //         animaster().scale(element, 500, 1);
+            //     }
+            //     scaleUp = !scaleUp;
+            // }, 500);
+            //
+            // return {
+            //     stop() {
+            //         clearInterval(interval);
+            //         reseter().resetMove();
+            //         reseter().resetFadeOut();
+            //     }
+            // };
         },
     };
 }
@@ -118,7 +160,8 @@ function addListeners() {
     document.getElementById('fadeInPlay')
         .addEventListener('click', function () {
             const block = document.getElementById('fadeInBlock');
-            animaster().move(block, 5000);
+            const anim = animaster().addFadeIn(5000);
+            anim.play(block);
         });
 
     document.getElementById('fadeInReset')
@@ -132,7 +175,8 @@ function addListeners() {
             const block = document.getElementById('moveBlock');
             const anim = animaster().addMove(1000, {x: 100, y: 10});
             anim.play(block);
-        }); 
+
+        });
     
     document.getElementById('moveReset')
         .addEventListener('click', function () {
@@ -143,7 +187,8 @@ function addListeners() {
     document.getElementById('scalePlay')
         .addEventListener('click', function () {
             const block = document.getElementById('scaleBlock');
-            animaster().scale(block, 1000, 1.25);
+            const anim = animaster().addScale(1000, 1.25);
+            anim.play(block);
         });
 
     document.getElementById('scaleReset')
@@ -155,14 +200,9 @@ function addListeners() {
     document.getElementById('fadeOutPlay')
         .addEventListener('click', function () {
             const block = document.getElementById('fadeOutBlock');
-            animaster().fadeOut(block, 5000);
+            const anim = animaster().addFadeOut(5000);
+            anim.play(block);
         });
-
-    // document.getElementById('moveAndHidePlay')
-    //     .addEventListener('click', function () {
-    //         const block = document.getElementById('moveAndHideBlock');
-    //         animaster().moveAndHide(block, 5000);
-    //     });
 
     document.getElementById('moveAndHidePlay')
         .addEventListener('click', function () {
