@@ -31,7 +31,33 @@ function animaster()
         scale(element, duration, ratio) {
             element.style.transitionDuration =  `${duration}ms`;
             element.style.transform = getTransform(null, ratio);
-        }
+        },
+        fadeOut(element, duration) {
+            element.style.transitionDuration =  `${duration}ms`;
+            element.classList.add('hide');
+            element.classList.remove('show');
+        },
+        moveAndHide(element, duration) {
+            animaster().move(element, duration * 2/5, { x: 100, y: 20 });
+            setTimeout(() => animaster().fadeOut(element, duration * 3/5), duration * 2/5);
+        },
+        showAndHide(element, duration) {
+            animaster().fadeIn(element, duration * 1/3);
+            setTimeout(() => animaster().fadeOut(element, duration * 1/3), duration * 2/3);
+        },
+
+        heartBeating(element) {
+            let scaleUp = true;
+
+            setInterval(() => {
+                if (scaleUp) {
+                    animaster().scale(element, 500, 1.4);
+                } else {
+                    animaster().scale(element, 500, 1);
+                }
+                scaleUp = !scaleUp;
+            }, 500);
+        },
     };
 }
 
@@ -52,6 +78,30 @@ function addListeners() {
         .addEventListener('click', function () {
             const block = document.getElementById('scaleBlock');
             animaster().scale(block, 1000, 1.25);
+        });
+
+    document.getElementById('fadeOutPlay')
+        .addEventListener('click', function () {
+            const block = document.getElementById('fadeOutBlock');
+            animaster().fadeOut(block, 5000);
+        });
+
+    document.getElementById('moveAndHidePlay')
+        .addEventListener('click', function () {
+            const block = document.getElementById('moveAndHideBlock');
+            animaster().moveAndHide(block, 5000);
+        });
+
+    document.getElementById('showAndHidePlay')
+        .addEventListener('click', function () {
+            const block = document.getElementById('showAndHideBlock');
+            animaster().showAndHide(block, 5000);
+        });
+
+    document.getElementById('heartBeatingPlay')
+        .addEventListener('click', function () {
+            const block = document.getElementById('heartBeatingBlock');
+            animaster().heartBeating(block);
         });
 }
 
