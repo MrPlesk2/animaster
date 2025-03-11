@@ -2,7 +2,17 @@ addListeners();
 
 function animaster()
 {
+    const _steps = [];
     return {
+        play(element) {
+            _steps.forEach(x => x[0](element, ...x.slice(1)));
+        },
+
+        addMove(duration, translation) {
+            _steps.push([(e, d, t) => animaster().move(e, d ,t), duration, translation]);
+            return this;
+        },
+
         /**
          * Блок плавно появляется из прозрачного.
          * @param element — HTMLElement, который надо анимировать
@@ -108,7 +118,7 @@ function addListeners() {
     document.getElementById('fadeInPlay')
         .addEventListener('click', function () {
             const block = document.getElementById('fadeInBlock');
-            animaster().fadeIn(block, 5000);
+            animaster().move(block, 5000);
         });
 
     document.getElementById('fadeInReset')
@@ -120,8 +130,9 @@ function addListeners() {
     document.getElementById('movePlay')
         .addEventListener('click', function () {
             const block = document.getElementById('moveBlock');
-            animaster().move(block, 1000, {x: 100, y: 10});
-        });
+            const anim = animaster().addMove(1000, {x: 100, y: 10});
+            anim.play(block);
+        }); 
     
     document.getElementById('moveReset')
         .addEventListener('click', function () {
