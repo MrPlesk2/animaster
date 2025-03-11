@@ -40,7 +40,14 @@ function animaster()
         },
         moveAndHide(element, duration) {
             animaster().move(element, duration * 2/5, { x: 100, y: 20 });
-            setTimeout(() => animaster().fadeOut(element, duration * 3/5), duration * 2/5);
+            const timeout = setTimeout(() => animaster().fadeOut(element, duration * 3/5), duration * 2/5);
+            return {
+                reset() {
+                    clearTimeout(timeout);
+                    reseter().resetMove(element);
+                    reseter().resetFadeOut(element);
+                }
+            };
         },
         showAndHide(element, duration) {
             animaster().fadeIn(element, duration * 1/3);
@@ -62,6 +69,8 @@ function animaster()
             return {
                 stop() {
                     clearInterval(interval);
+                    reseter().resetMove();
+                    reseter().resetFadeOut();
                 }
             };
         },
@@ -80,12 +89,17 @@ function reseter() {
             element.classList.remove('show');
             element.classList.add('hide');
         },
+
+        resetFadeOut(element) {
+            element.style.transitionDuration = `${100}ms`;
+            element.classList.add('show');
+            element.classList.remove('hide');
+        },
         
         resetScale(element) {
             element.style.transitionDuration =  `${100}ms`;
             element.style.transform = null;
         }
-
     }
 
 }
@@ -133,10 +147,20 @@ function addListeners() {
             animaster().fadeOut(block, 5000);
         });
 
+    // document.getElementById('moveAndHidePlay')
+    //     .addEventListener('click', function () {
+    //         const block = document.getElementById('moveAndHideBlock');
+    //         animaster().moveAndHide(block, 5000);
+    //     });
+
     document.getElementById('moveAndHidePlay')
         .addEventListener('click', function () {
             const block = document.getElementById('moveAndHideBlock');
-            animaster().moveAndHide(block, 5000);
+            const stop = animaster().moveAndHide(block, 5000);
+            document.getElementById('moveAndHideReset')
+                .addEventListener('click', function () {
+                    stop.reset();
+                });
         });
 
     document.getElementById('showAndHidePlay')
